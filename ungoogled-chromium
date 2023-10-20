@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [[ ! -d ~/.local/share/ungoogled-chromium ]] ; then
+    set -o pipefail
+    curdir="$(pwd)"
+    version=$(wget -O - https://raw.githubusercontent.com/ungoogled-software/ungoogled-chromium-binaries/master/releases/linux_portable/64bit/index.html | grep "<li><a" | head -n 1 | cut -f3 -d">" | cut -f1 -d"<")
+mkdir -p ~/.local/share/
+    cd ~/.local/share/
+    wget https://github.com/ungoogled-software/ungoogled-chromium-portablelinux/releases/download/$version/ungoogled-chromium_$version.1_linux.tar.xz -O - | tar -xJf -
+mv ungoogled-chromium_$version.1_linux ungoogled-chromium
+    cd "$curdir"
+fi
+exec ~/.local/share/ungoogled-chromium/chrome $@
