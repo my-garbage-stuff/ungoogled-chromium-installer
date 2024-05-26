@@ -1,13 +1,22 @@
 #!/bin/bash
+version=$(wget -O - https://ungoogled-software.github.io/ungoogled-chromium-binaries/releases/linux_portable/64bit/  | grep "<li><a" | head -n 1 | cut -f3 -d">" | cut -f1 -d"<")
 
-if [[ ! -d ~/.local/share/ungoogled-chromium ]] ; then
+if [[ "$1" != "--no-update" ]] ; then
+    set -e
     set -o pipefail
-    curdir="$(pwd)"
-    version=$(wget -O - https://raw.githubusercontent.com/ungoogled-software/ungoogled-chromium-binaries/master/releases/linux_portable/64bit/index.html | grep "<li><a" | head -n 1 | cut -f3 -d">" | cut -f1 -d"<")
-mkdir -p ~/.local/share/
+    curdir="$PWD"
+    mkdir -p ~/.local/share/
     cd ~/.local/share/
-    wget https://github.com/ungoogled-software/ungoogled-chromium-portablelinux/releases/download/$version/ungoogled-chromium_$version.1_linux.tar.xz -O - | tar -xJf -
-mv ungoogled-chromium_$version.1_linux ungoogled-chromium
+    if [[ ! -f ungoogled-chromium/.version ]] || [[ "$(cat ungoogled-chromium/.version)" != "$version" ]] ; then
+        if [[ -d "ungoogled-chromium" ]] ; then
+            rm -rf ungoogled-chromium
+        fi
+        wget https://github.com/ungoogled-software/ungoogled-chromium-portablelinux/releases/download/${version}/ungoogled-chromium_${version}_linux.tar.xz  -O - | tar -xJf -
+        mv ungoogled-chromium_${version}_linux ungoogled-chromium
+        echo ${version} > ungoogled-chromium/.version
+    fi
     cd "$curdir"
 fi
-exec ~/.local/share/ungoogled-chromium/chrome $@
+if [[ -d ~/.local/share/ungoogled-chromium ]] ; then
+    exec ~/.local/share/ungoogled-chromium/chrome $@
+fi
